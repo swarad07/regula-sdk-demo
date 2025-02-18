@@ -9,3 +9,4 @@ Currently, two official plugins are available:
 
 # Regula SDK setup
 - Add License in the .env file
+- You will have to convert the .license file to base64

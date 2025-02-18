@@ -3,6 +3,7 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 import { defineComponents, DocumentReaderService } from '@regulaforensics/vp-frontend-document-components';
+import { converBase64ToImage } from 'convert-base64-to-image';
 
 function App() {
   const [count, setCount] = useState(0)
@@ -27,13 +28,49 @@ function App() {
         startScreen: true
       };
     }
+
+    const regulaContainer = document.querySelector('.regula-container');
+    regulaContainer.addEventListener('document-reader', documentReaderListener);
   }, []);
+
+  function documentReaderListener(data) {
+    console.log(data.detail.action);
+    if (data.detail.action === 'PROCESS_FINISHED') {
+        console.log(data.detail.data);
+
+        // const base64 = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD//'
+        const pathToSaveImage = './public/'+ data.detail.data.response.TransactionInfo.TransactionID + '.png';
+        const rawImage = 'data:image/jpeg;base64,' + data.detail.data?.response?.images?.fieldList[0].valueList[0].value;
+        console.log(rawImage)
+        // const path = converBase64ToImage(rawImage, pathToSaveImage);
+        //console.log(path);
+
+        const status = data.detail.data?.status;
+        const isFinishStatus = status === 1 || status === 2;
+
+        if (!isFinishStatus || !data.detail.data?.response) return;
+
+        window.RegulaDocumentSDK.finalizePackage();
+    }
+    if (data.detail?.action === 'CLOSE') {
+        const reader = document.querySelector('document-reader');
+
+        if (reader) {
+            reader.remove();
+        }
+
+        button.style.display = 'block';
+    }
+  }
 
 
   window.RegulaDocumentSDK = new DocumentReaderService();
 
   window.RegulaDocumentSDK.recognizerProcessParam = {
     processParam: {
+      backendProcessing: {
+        serviceURL: 'http://localhost:8080',
+      },
       scenario: 'MrzAndLocate',
       returnUncroppedImage: true,
       multipageProcessing: false,
@@ -65,7 +102,7 @@ function App() {
     <>
       <div className="regula-container">
         <h2>Document Reader</h2>
-        <document-reader ref={documentReaderElementRef}></document-reader>
+        <document-reader ref={documentReaderElementRef} ></document-reader>
         <h2>Camera Snapshot</h2>
         <camera-snapshot ref={cameraSnapshotElementRef}></camera-snapshot>
       </div>

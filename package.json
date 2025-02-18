@@ -12,6 +12,7 @@
   "dependencies": {
     "@regulaforensics/document-reader-webclient": "^7.5.206",
     "@regulaforensics/vp-frontend-document-components": "^7.5.2022",
+    "convert-base64-to-image": "^0.0.16",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
