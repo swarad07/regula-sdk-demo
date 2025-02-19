@@ -3,12 +3,15 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 import { defineComponents, DocumentReaderService } from '@regulaforensics/vp-frontend-document-components';
+import '@regulaforensics/vp-frontend-face-components';
 import { converBase64ToImage } from 'convert-base64-to-image';
 
 function App() {
   const [count, setCount] = useState(0)
   const documentReaderElementRef = useRef(null);
   const cameraSnapshotElementRef = useRef(null);
+  const faceCaptureElementRef = useRef(null);
+  const faceLivenessElementRef = useRef(null);
 
   useEffect(() => {
     if (documentReaderElementRef.current) {
@@ -29,9 +32,74 @@ function App() {
       };
     }
 
+    if (faceCaptureElementRef.current) {
+      faceCaptureElementRef.current.settings = {
+        locale: 'en',
+        copyright: true,
+        changeCamera: true,
+        startScreen: true,
+        closeDisabled: true,
+        finishScreen: true,
+        retryCount: 3,
+      };
+    }
+
+    if (faceLivenessElementRef.current) {
+      faceLivenessElementRef.current.settings = {
+        locale: 'en',
+        copyright: true,
+        changeCamera: true,
+        startScreen: true,
+        closeDisabled: true,
+        finishScreen: true,
+        retryCount: 3,
+      };
+    }
+
+    // Document Reader
     const regulaContainer = document.querySelector('.regula-container');
     regulaContainer.addEventListener('document-reader', documentReaderListener);
+
+    // Face Capture
+    const faceCaptureComponent = document.getElementsByTagName('face-capture')[0];
+    faceCaptureComponent.addEventListener('face-capture', faceCaptureListener);
+
+    // Face Liveness
+    const faceLivenessComponent = document.getElementsByTagName('face-liveness')[0];
+    faceLivenessComponent.addEventListener('face-liveness', faceLivenessListener);
+
   }, []);
+
+  function faceCaptureListener(data) {
+    if (data.detail.action === 'PROCESS_FINISHED') {
+        if (data.detail.data?.status === 1 && data.detail.data.response) {
+            console.log(data.detail.data.response);
+        }
+    }
+    if (data.detail?.action === 'CLOSE') {
+        const faceCapture = document.querySelector('face-capture');
+
+        if (faceCapture) {
+            faceCapture.remove();
+        }
+    }
+  }
+
+  function faceLivenessListener(data) {
+    console.log(data);
+    if (data.detail.action === 'PROCESS_FINISHED') {
+        if (data.detail.data?.status === 1 && data.detail.data.response) {
+            console.log(data.detail.data.response);
+        }
+    }
+    if (data.detail?.action === 'CLOSE') {
+        const faceLiveness = document.querySelector('face-liveness');
+
+        if (faceLiveness) {
+            faceLiveness.remove();
+        }
+    }
+  }
 
   function documentReaderListener(data) {
     console.log(data.detail.action);
@@ -105,6 +173,12 @@ function App() {
         <document-reader ref={documentReaderElementRef} ></document-reader>
         <h2>Camera Snapshot</h2>
         <camera-snapshot ref={cameraSnapshotElementRef}></camera-snapshot>
+      </div>
+      <div className="regula-face-container">
+        <h2>Face Capture</h2>
+        <face-capture ref={faceCaptureElementRef}></face-capture>
+        <h2>Face Liveliness</h2>
+        <face-liveness ref={faceLivenessElementRef}></face-liveness>
       </div>
     </>
   )
