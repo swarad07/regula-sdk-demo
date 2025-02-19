@@ -1,13 +1,25 @@
-import { useState, useEffect, useRef } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useEffect, useRef, React } from 'react';
+import reactLogo from './assets/react.svg';
+import viteLogo from '/vite.svg';
+import './App.css';
 import { defineComponents, DocumentReaderService } from '@regulaforensics/vp-frontend-document-components';
 import '@regulaforensics/vp-frontend-face-components';
 import { converBase64ToImage } from 'convert-base64-to-image';
 
+const buttonStyle = {
+  padding: '10px 30px',
+  color: 'white',
+  fontSize: '16px',
+  borderRadius: '2px',
+  backgroundColor: '#bd7dff',
+  border: '1px solid #bd7dff',
+  cursor: 'pointer'
+};
+
 function App() {
   const [count, setCount] = useState(0)
+  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen2, setIsOpen2] = useState(false);
   const documentReaderElementRef = useRef(null);
   const cameraSnapshotElementRef = useRef(null);
   const faceCaptureElementRef = useRef(null);
@@ -61,44 +73,68 @@ function App() {
     regulaContainer.addEventListener('document-reader', documentReaderListener);
 
     // Face Capture
-    const faceCaptureComponent = document.getElementsByTagName('face-capture')[0];
+    const faceCaptureComponent = document.querySelector('.face-capture-container');
     faceCaptureComponent.addEventListener('face-capture', faceCaptureListener);
 
     // Face Liveness
-    const faceLivenessComponent = document.getElementsByTagName('face-liveness')[0];
+    const faceLivenessComponent = document.querySelector('.face-liveness-container');
     faceLivenessComponent.addEventListener('face-liveness', faceLivenessListener);
 
   }, []);
 
   function faceCaptureListener(data) {
+    console.log(data);
+    console.log(data.detail.action)
     if (data.detail.action === 'PROCESS_FINISHED') {
-        if (data.detail.data?.status === 1 && data.detail.data.response) {
-            console.log(data.detail.data.response);
-        }
+      const response = data.detail.data.response;
+      console.log(response);
+      const rawImage = 'data:image/jpeg;base64,' + response.capture[0];
+      console.log(rawImage)
     }
-    if (data.detail?.action === 'CLOSE') {
-        const faceCapture = document.querySelector('face-capture');
 
-        if (faceCapture) {
-            faceCapture.remove();
-        }
+    if (data.detail?.action === 'CLOSE') {
+      setIsOpen(false);
     }
+    // if (data.detail.action === 'PROCESS_FINISHED') {
+    //     if (data.detail.data?.status === 1 && data.detail.data.response) {
+    //         console.log(data.detail.data.response);
+    //     }
+    // }
+    // if (data.detail?.action === 'CLOSE') {
+    //     const faceCapture = document.querySelector('face-capture');
+
+    //     if (faceCapture) {
+    //         faceCapture.remove();
+    //     }
+    // }
   }
 
   function faceLivenessListener(data) {
     console.log(data);
+    console.log(data.detail.action)
     if (data.detail.action === 'PROCESS_FINISHED') {
-        if (data.detail.data?.status === 1 && data.detail.data.response) {
-            console.log(data.detail.data.response);
-        }
+      const response = data.detail.data.response;
+      const rawImage = 'data:image/jpeg;base64,' + response.images[0];
+      console.log(rawImage)
+      console.log('Face Liveness Process Finished with status ' + data.detail.data.status);
     }
-    if (data.detail?.action === 'CLOSE') {
-        const faceLiveness = document.querySelector('face-liveness');
 
-        if (faceLiveness) {
-            faceLiveness.remove();
-        }
+    if (data.detail?.action === 'CLOSE') {
+      setIsOpen2(false);
     }
+
+    // if (data.detail.action === 'PROCESS_FINISHED') {
+    //     if (data.detail.data?.status === 1 && data.detail.data.response) {
+    //         console.log(data.detail.data.response);
+    //     }
+    // }
+    // if (data.detail?.action === 'CLOSE') {
+    //     const faceLiveness = document.querySelector('face-liveness');
+
+    //     if (faceLiveness) {
+    //         faceLiveness.remove();
+    //     }
+    // }
   }
 
   function documentReaderListener(data) {
@@ -176,9 +212,25 @@ function App() {
       </div>
       <div className="regula-face-container">
         <h2>Face Capture</h2>
-        <face-capture ref={faceCaptureElementRef}></face-capture>
+
+
+        <div className="face-capture-container">
+            {isOpen ? (
+                <face-capture ref={faceCaptureElementRef}></face-capture>
+            ) : (
+                <button style={buttonStyle} onClick={() => setIsOpen(true)}>Open Face Capture</button>
+            )}
+        </div>
+
         <h2>Face Liveliness</h2>
-        <face-liveness ref={faceLivenessElementRef}></face-liveness>
+
+        <div className="face-liveness-container">
+            {isOpen2 ? (
+                <face-liveness ref={faceLivenessElementRef}></face-liveness>
+            ) : (
+                <button style={buttonStyle} onClick={() => setIsOpen2(true)}>Open Face Liveliness check</button>
+            )}
+        </div>
       </div>
     </>
   )
