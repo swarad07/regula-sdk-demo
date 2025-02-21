@@ -53,3 +53,39 @@ document-reader::part(processing-message) {
   /* Styles to apply to the `foo` part */
   color: blue;
 }
+
+h2 {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.numbers {
+  background: white;
+  padding: 4px;
+  color: #242424;
+  border-radius: 50%;
+  font-size: 12px;
+  width: 14px;
+  height: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+}
+
+.response-text-fields .row {
+  display: flex;
+  align-items: center;
+  text-align: left;
+  border-bottom: 1px solid #555;
+}
+
+.row p {
+  word-wrap: break-word;
+  max-width: 470px;
+}
+
+.response-text-fields h4 {
+  min-width: 250px;
+}

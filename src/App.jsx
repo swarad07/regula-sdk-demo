@@ -24,6 +24,7 @@ function App() {
   const cameraSnapshotElementRef = useRef(null);
   const faceCaptureElementRef = useRef(null);
   const faceLivenessElementRef = useRef(null);
+  const [documentReaderResponse, setDocumentReaderResponse] = useState(null);
   const [locale, setLocale] = useState('en');
 
   const getLocaleOptions = () => {
@@ -91,7 +92,7 @@ function App() {
     const faceLivenessComponent = document.querySelector('.face-liveness-container');
     faceLivenessComponent.addEventListener('face-liveness', faceLivenessListener);
 
-  }, [locale]);
+  }, [locale, documentReaderResponse]);
 
   function faceCaptureListener(data) {
     console.log(data);
@@ -106,18 +107,6 @@ function App() {
     if (data.detail?.action === 'CLOSE') {
       setIsOpen(false);
     }
-    // if (data.detail.action === 'PROCESS_FINISHED') {
-    //     if (data.detail.data?.status === 1 && data.detail.data.response) {
-    //         console.log(data.detail.data.response);
-    //     }
-    // }
-    // if (data.detail?.action === 'CLOSE') {
-    //     const faceCapture = document.querySelector('face-capture');
-
-    //     if (faceCapture) {
-    //         faceCapture.remove();
-    //     }
-    // }
   }
 
   function faceLivenessListener(data) {
@@ -133,32 +122,52 @@ function App() {
     if (data.detail?.action === 'CLOSE') {
       setIsOpen2(false);
     }
-
-    // if (data.detail.action === 'PROCESS_FINISHED') {
-    //     if (data.detail.data?.status === 1 && data.detail.data.response) {
-    //         console.log(data.detail.data.response);
-    //     }
-    // }
-    // if (data.detail?.action === 'CLOSE') {
-    //     const faceLiveness = document.querySelector('face-liveness');
-
-    //     if (faceLiveness) {
-    //         faceLiveness.remove();
-    //     }
-    // }
   }
+
+  const generateImg = (base64) => {
+    // const img = document.createElement('img');
+    return 'data:image/jpeg;base64,' + base64;
+    // return img;
+  };
+
+  const generateTextFields = (fields) => {
+    if (!fields) return;
+    const textFields = fields.map((field, index) => {
+      return (
+        <div className="row" key={index}>
+          <h4>{field.fieldName}</h4>
+          <p>{field.value}</p>
+        </div>
+      );
+    });
+
+    return textFields;
+  };
+
+  const generateImageFields = (fields) => {
+    if (!fields) return;
+    const imageFields = fields.map((field, index) => {
+      return (
+        <div className="row" key={index}>
+          <h4>{field.fieldName}</h4>
+          <img src={generateImg(field.valueList[0].value)} alt={field.fieldName} />
+        </div>
+      );
+    });
+
+    console.log(imageFields);
+
+    return imageFields;
+  };
+
 
   function documentReaderListener(data) {
     console.log(data.detail.action);
     if (data.detail.action === 'PROCESS_FINISHED') {
         console.log(data.detail.data);
-
-        // const base64 = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD//'
+        setDocumentReaderResponse(data.detail.data);
         const pathToSaveImage = './public/'+ data.detail.data.response.TransactionInfo.TransactionID + '.png';
-        const rawImage = 'data:image/jpeg;base64,' + data.detail.data?.response?.images?.fieldList[0].valueList[0].value;
-        console.log(rawImage)
-        // const path = converBase64ToImage(rawImage, pathToSaveImage);
-        //console.log(path);
+        const img = generateImg(data.detail.data?.response?.images?.fieldList[0].valueList[0].value);
 
         const status = data.detail.data?.status;
         const isFinishStatus = status === 1 || status === 2;
@@ -167,6 +176,7 @@ function App() {
 
         window.RegulaDocumentSDK.finalizePackage();
     }
+
     if (data.detail?.action === 'CLOSE') {
         const reader = document.querySelector('document-reader');
 
@@ -191,7 +201,8 @@ function App() {
       multipageProcessing: false,
       returnPackageForReprocess: false,
       timeout: 20000,
-      resultTypeOutput: [17, 37, 102, 103, 20, 9, 6, 5, 3, 1, 19],
+      // resultTypeOutput: [17, 37, 102, 103, 20, 9, 6, 5, 3, 1, 19],
+      resultTypeOutput: [20],
       imageQa: {
         expectedPass: ['dpiThreshold', 'glaresCheck', 'focusCheck'],
         dpiThreshold: 130,
@@ -227,31 +238,35 @@ function App() {
           </select>
       </div>
       <div className="regula-container">
-        <h2>Document Reader</h2>
+        <h2><span className="numbers">1</span>Document Reader</h2>
         <document-reader ref={documentReaderElementRef} ></document-reader>
         {/* <h2>Camera Snapshot</h2> */}
         {/* <camera-snapshot ref={cameraSnapshotElementRef}></camera-snapshot> */}
       </div>
       <div className="regula-face-container">
-        <h2>Face Capture</h2>
-
-
-        <div className="face-capture-container">
-            {isOpen ? (
-                <face-capture ref={faceCaptureElementRef}></face-capture>
-            ) : (
-                <button style={buttonStyle} onClick={() => setIsOpen(true)}>Open Face Capture</button>
-            )}
-        </div>
-
-        <h2>Face Liveliness</h2>
-
+        <h2><span className="numbers">2</span>Face Liveliness</h2>
         <div className="face-liveness-container">
             {isOpen2 ? (
                 <face-liveness ref={faceLivenessElementRef}></face-liveness>
             ) : (
                 <button style={buttonStyle} onClick={() => setIsOpen2(true)}>Open Face Liveliness check</button>
             )}
+        </div>
+        <h2><span className="numbers">3</span>Face Capture</h2>
+        <div className="face-capture-container">
+          {isOpen ? (
+              <face-capture ref={faceCaptureElementRef}></face-capture>
+          ) : (
+              <button style={buttonStyle} onClick={() => setIsOpen(true)}>Open Face Capture</button>
+          )}
+        </div>
+      </div>
+      <div className="regula-response">
+        <div className="response-text-fields">
+          {generateTextFields(documentReaderResponse?.response?.text?.fieldList)}
+        </div>
+        <div className="response-image-fields">
+          {generateImageFields(documentReaderResponse?.response?.images?.fieldList)}
         </div>
       </div>
     </>
