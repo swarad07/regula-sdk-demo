@@ -24,11 +24,22 @@ function App() {
   const cameraSnapshotElementRef = useRef(null);
   const faceCaptureElementRef = useRef(null);
   const faceLivenessElementRef = useRef(null);
+  const [locale, setLocale] = useState('en');
+
+  const getLocaleOptions = () => {
+    const locales = ['en', 'es', 'zh-Hans', 'ja', 'ko'];
+    return locales.map((locale) => (
+      <option key={locale} value={locale}>
+        {locale}
+      </option>
+    ));
+  };
 
   useEffect(() => {
+    console.log(locale);
     if (documentReaderElementRef.current) {
       documentReaderElementRef.current.settings = {
-        locale: 'en',
+        locale: locale,
         captureButton: true,
         mirrorButton: true,
         startScreen: true,
@@ -37,7 +48,7 @@ function App() {
 
     if (cameraSnapshotElementRef.current) {
       cameraSnapshotElementRef.current.settings = {
-        locale: 'en',
+        locale: locale,
         captureButton: true,
         mirrorButton: true,
         startScreen: true
@@ -46,7 +57,7 @@ function App() {
 
     if (faceCaptureElementRef.current) {
       faceCaptureElementRef.current.settings = {
-        locale: 'en',
+        locale: locale,
         copyright: true,
         changeCamera: true,
         startScreen: true,
@@ -58,7 +69,7 @@ function App() {
 
     if (faceLivenessElementRef.current) {
       faceLivenessElementRef.current.settings = {
-        locale: 'en',
+        locale: locale,
         copyright: true,
         changeCamera: true,
         startScreen: true,
@@ -80,7 +91,7 @@ function App() {
     const faceLivenessComponent = document.querySelector('.face-liveness-container');
     faceLivenessComponent.addEventListener('face-liveness', faceLivenessListener);
 
-  }, []);
+  }, [locale]);
 
   function faceCaptureListener(data) {
     console.log(data);
@@ -202,13 +213,24 @@ function App() {
 
   defineComponents().then(() => window.RegulaDocumentSDK.initialize({ license: 'AAEAAESFb1zjjaK+vbgfIIMKIwS+TGmvhsrpUuTNCaVjY2smJc2gOCulmK6nbgHDdvGDpEqvmPgPsM25/I50yKCdx4jWcE25onpznjPPoBdSZ4chG1OJV2StGnbe6MG+N250ofonnCg7ATsRujSYUCqI6OjR8c/nNbKv+iC2ASWWos3Js8Q3Pubt4PX+shLquv6d0wB/Cev2TASe+DlxGtddgrCZl+lFaKCvMrmkK5nrui57QVZbYR4SaHBrN9eTnGPAZVejJukDsdOnPizrZVbmP7UlHtZL5GmylMk7hT5NgRgIjoMU1gGirknFsmU1kAZMIat1WIIgLxg+8O529w2twW/kAAAAAAAAEPMvAhWSzHtZK9PpKm0moMzQ9TXkWqkb3yTfqyAHy2jb56yiYz1QuR6bQo0PfMJ9AQM9h2wBsjlGg7ywf6sx8NagesbJk2Q38JAgMH5lnSd3nnDqXDjmRzdRQ5qHD58E1f4CEMi5qB09NXLswZ4GCyUjRDrPwLXrdaJdpyPw4xtzlZNlTctsUwSEfcHRTiDa6oDBF3Nu2Jh7ipBy1us59R3yhrZRsSyKI7+120CxPu3hBpmDpf2PLydOVqpx8J6ajl7k1xT5h90xZiY+VctAAww4riomV+6XmP4k1o4PWtas' }));
 
+  const updateLocale = (e) => {
+    setLocale(e.target.value);
+  };
+
   return (
     <>
+      <div className="locale-options">
+        <h2>Locale Options</h2>
+          <label htmlFor="locale">Locale</label>
+          <select id="locale" onChange={(e) => updateLocale(e)}>
+            {getLocaleOptions()}
+          </select>
+      </div>
       <div className="regula-container">
         <h2>Document Reader</h2>
         <document-reader ref={documentReaderElementRef} ></document-reader>
-        <h2>Camera Snapshot</h2>
-        <camera-snapshot ref={cameraSnapshotElementRef}></camera-snapshot>
+        {/* <h2>Camera Snapshot</h2> */}
+        {/* <camera-snapshot ref={cameraSnapshotElementRef}></camera-snapshot> */}
       </div>
       <div className="regula-face-container">
         <h2>Face Capture</h2>
