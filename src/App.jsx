@@ -275,6 +275,10 @@ function App() {
 
   return (
     <>
+      <div className="header">
+        <h1>Regula SDK API integration demo</h1>
+        <h4>By Swarad Mokal</h4>
+      </div>
       <div className="locale-options">
         <h2>Locale Options</h2>
           <label htmlFor="locale">Locale</label>

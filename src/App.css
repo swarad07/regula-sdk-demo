@@ -44,9 +44,9 @@ body {
   color: #888;
 }
 
-.regula-container {
+/* .regula-container {
   width: 800px;
-}
+} */
 
 document-reader::part(processing-message) {
   /* Styles to apply to the `foo` part */
@@ -128,4 +128,14 @@ h3 {
   text-decoration: underline;
   text-underline-offset: 4px;
   font-style: italic;
+}
+
+.header,
+.locale-options,
+.regula-container,
+.regula-response,
+.regula-face-container {
+  background: #151515;
+  padding: 20px;
+  margin-bottom: 20px;
 }
