@@ -4,6 +4,8 @@ import viteLogo from '/vite.svg';
 import './App.css';
 import { defineComponents, DocumentReaderService } from '@regulaforensics/vp-frontend-document-components';
 import '@regulaforensics/vp-frontend-face-components';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faDiamond } from '@fortawesome/free-solid-svg-icons';
 
 const buttonStyle = {
   padding: '10px 30px',
@@ -173,7 +175,7 @@ function App() {
     const textFields = fields.map((field, index) => {
       return (
         <div className="row" key={index}>
-          <h4>{field.fieldName}</h4>
+          <h4><FontAwesomeIcon icon={faDiamond} />{field.fieldName}</h4>
           <p>{field.value}</p>
         </div>
       );
@@ -190,7 +192,7 @@ function App() {
     const imageFields = fields.map((field, index) => {
       return (
         <div className="row" key={index}>
-          <h4>{field.fieldName}</h4>
+          <h4><FontAwesomeIcon icon={faDiamond} />{field.fieldName}</h4>
           <img src={generateImg(field.valueList[0].value)} alt={field.fieldName} />
         </div>
       );
@@ -201,6 +203,9 @@ function App() {
     return imageFields;
   };
 
+  /**
+   * Document Reader Listener
+   */
   function documentReaderListener(data) {
     console.log(data.detail.action);
     if (data.detail.action === 'PROCESS_FINISHED') {
@@ -228,8 +233,10 @@ function App() {
     }
   }
 
+  // Regula Document SDK
   window.RegulaDocumentSDK = new DocumentReaderService();
 
+  // Recognizer Process Param
   window.RegulaDocumentSDK.recognizerProcessParam = {
     processParam: {
       backendProcessing: {
@@ -240,8 +247,8 @@ function App() {
       multipageProcessing: false,
       returnPackageForReprocess: false,
       timeout: 20000,
-      // resultTypeOutput: [17, 37, 102, 103, 20, 9, 6, 5, 3, 1, 19],
-      resultTypeOutput: [20],
+      resultTypeOutput: [17, 37, 102, 103, 20, 9, 6, 5, 3, 1, 19],
+      // resultTypeOutput: [20],
       imageQa: {
         expectedPass: ['dpiThreshold', 'glaresCheck', 'focusCheck'],
         dpiThreshold: 130,
@@ -253,6 +260,8 @@ function App() {
       },
     },
   };
+
+  // Image Process Param
   window.RegulaDocumentSDK.imageProcessParam = {
     processParam: {
       scenario: 'MrzAndLocate',
@@ -261,6 +270,7 @@ function App() {
     },
   };
 
+  // Initialize Regula Document SDK
   defineComponents().then(() => window.RegulaDocumentSDK.initialize({ license: import.meta.env.VITE_REACT_APP_REGULA_LICENSE }));
 
   return (
@@ -297,7 +307,7 @@ function App() {
         </div>
       </div>
       <div className="regula-response">
-        <h2>Response</h2>
+        <h2>Response Logs</h2>
         <div className="response-text-fields">
           <h3>Document Reader Text fields</h3>
           {generateTextFields(documentReaderResponse?.response?.text?.fieldList)}

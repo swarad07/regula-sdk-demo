@@ -73,12 +73,19 @@ h2 {
   margin-right: 12px;
 }
 
+.response-text-fields .row:not(:last-child),
+.face-liveness-response .row:not(:last-child),
+.response-image-fields .row:not(:last-child) {
+  border-bottom: 1px dashed #555;
+}
+
 .response-text-fields .row,
-.face-liveness-response .row {
+.face-liveness-response .row,
+.response-image-fields .row {
   display: flex;
   align-items: center;
   text-align: left;
-  border-bottom: 1px solid #555;
+  gap: 10px;
 }
 
 .row p {
@@ -87,8 +94,14 @@ h2 {
 }
 
 .response-text-fields h4,
-.face-liveness-response h4 {
+.face-liveness-response h4,
+.response-image-fields h4 {
   min-width: 250px;
+  color: #565656;
+}
+
+h4 svg {
+  margin-right: 10px;
 }
 
 .face-liveness-response img {
@@ -98,9 +111,21 @@ h2 {
 }
 
 .regula-response h2 {
-  border-top: 1px solid #555;
   width: 100%;
   text-align: left;
   text-align: left;
   display: block;
+}
+
+.regula-response > div {
+  /* border-bottom: 2px solid #555; */
+  background: #151515;
+  padding: 20px;
+  margin: 20px 0;
+}
+
+h3 {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  font-style: italic;
 }
