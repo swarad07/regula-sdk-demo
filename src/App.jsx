@@ -3,6 +3,7 @@ import reactLogo from './assets/react.svg';
 import viteLogo from '/vite.svg';
 import './App.css';
 import { defineComponents, DocumentReaderService } from '@regulaforensics/vp-frontend-document-components';
+import { FaceSdk, ImageSource } from "@regulaforensics/facesdk-webclient";
 import '@regulaforensics/vp-frontend-face-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDiamond } from '@fortawesome/free-solid-svg-icons';
@@ -27,7 +28,11 @@ function App() {
   const faceLivenessElementRef = useRef(null);
   const [documentReaderResponse, setDocumentReaderResponse] = useState(null);
   const [faceLivenessResponse, setFaceLivenessResponse] = useState(null);
+  const [faceCaptureResponse, setFaceCaptureResponse] = useState(null);
   const [locale, setLocale] = useState('en');
+  const [documentFace, setDocumentFace] = useState(false);
+  const [liveFace, setLiveFace] = useState(false);
+  const [faceMatchPoints, setfaceMatchPoints] = useState(null);
 
   /**
    * Get locale options
@@ -42,7 +47,7 @@ function App() {
   };
 
   useEffect(() => {
-    console.log(locale);
+    // console.log(locale);
     if (documentReaderElementRef.current) {
       documentReaderElementRef.current.settings = {
         locale: locale,
@@ -97,19 +102,30 @@ function App() {
     const faceLivenessComponent = document.querySelector('.face-liveness-container');
     faceLivenessComponent.addEventListener('face-liveness', faceLivenessListener);
 
-  }, [locale, documentReaderResponse, faceLivenessResponse]);
+  }, [locale, documentReaderResponse, faceLivenessResponse, faceCaptureResponse]);
+
+  useEffect(() => {
+    // console.log('Use effect for documentFace and liveFace');
+    // console.log(generateImg(documentFace), generateImg(liveFace));
+    if (documentFace && liveFace) {
+      faceCompare();
+    }
+  }, [documentFace, liveFace]);
 
   /**
    * Face Capture Listener
    */
   function faceCaptureListener(data) {
-    console.log(data);
-    console.log(data.detail.action)
+    // console.log(data);
+    // console.log(data.detail.action)
     if (data.detail.action === 'PROCESS_FINISHED') {
       const response = data.detail.data.response;
-      console.log(response);
-      const rawImage = 'data:image/jpeg;base64,' + response.capture[0];
-      console.log(rawImage)
+      // console.log(response)
+      setFaceCaptureResponse(response);
+      // const rawImage = 'data:image/jpeg;base64,' + response.capture[0];
+      console.log('Face capture Image: ');
+      console.log(generateImg(response.capture[0]));
+      setLiveFace(response.capture[0]);
     }
 
     if (data.detail?.action === 'CLOSE') {
@@ -122,10 +138,12 @@ function App() {
    */
   function faceLivenessListener(data) {
     if (data.detail.action === 'PROCESS_FINISHED') {
-      console.log(data.detail.data);
+      // console.log(data.detail.data);
       setFaceLivenessResponse(data.detail.data);
-      // const response = data.detail.data.response;
-      // const rawImage = 'data:image/jpeg;base64,' + response.images[0];
+      const response = data.detail.data.response;
+      console.log('Live capture Image: ');
+      console.log(response.images[0]);
+      setLiveFace(response.images[0]);
       // console.log(rawImage)
       // console.log('Face Liveness Process Finished with status ' + data.detail.data.status);
     }
@@ -135,25 +153,40 @@ function App() {
     }
   }
 
+  const generateFacecaptureResponseMarkup = (data) => {
+    if (!data) return;
+
+    const { capture } = data;
+
+    return (
+      <>
+        <div className="row">
+          <h4><FontAwesomeIcon icon={faDiamond} />Image</h4>
+          <p><img src={generateImg(capture[0])} alt="Face Capture" /></p>
+        </div>
+      </>
+    );
+  };
+
   const generateFaceLivenessResponseMarkup = (data) => {
     if (!data) return;
     const { code, estimatedAge, status, images } = data.response;
     return (
       <>
         <div className="row">
-          <h4>Code</h4>
+          <h4><FontAwesomeIcon icon={faDiamond} />Code</h4>
           <p>{code}</p>
         </div>
         <div className="row">
-          <h4>Estimated Age</h4>
+          <h4><FontAwesomeIcon icon={faDiamond} />Estimated Age</h4>
           <p>{estimatedAge}</p>
         </div>
         <div className="row">
-          <h4>Status</h4>
+          <h4><FontAwesomeIcon icon={faDiamond} />Status</h4>
           <p>{status}</p>
         </div>
         <div className="row">
-          <h4>Image</h4>
+          <h4><FontAwesomeIcon icon={faDiamond} /> Image</h4>
           <p><img src={generateImg(images[0])} alt="Face Liveness" /></p>
         </div>
       </>
@@ -198,21 +231,46 @@ function App() {
       );
     });
 
-    console.log(imageFields);
+    // console.log(imageFields);
 
     return imageFields;
+  };
+
+  const faceCompare = async () => {
+    console.log('Face Compare starts');
+    // console.log(documentFace, liveFace);
+    if (!documentFace || !liveFace) return;
+    const sdk = new FaceSdk({ basePath: '/api' });
+
+    const response = await sdk.matchingApi.match({
+      images: [
+          { type: ImageSource.LIVE, data: liveFace, index: 1 },
+          { type: ImageSource.DOCUMENT_RFID, data: documentFace, index: 2 }
+      ]
+    });
+
+    if (response) {
+      console.log(response);
+      setfaceMatchPoints((response.results[0].similarity)*100);
+    }
   };
 
   /**
    * Document Reader Listener
    */
   function documentReaderListener(data) {
-    console.log(data.detail.action);
+    // console.log(data.detail.action);
     if (data.detail.action === 'PROCESS_FINISHED') {
-        console.log(data.detail.data);
+        // console.log(data.detail.data);
         setDocumentReaderResponse(data.detail.data);
         const pathToSaveImage = './public/'+ data.detail.data.response.TransactionInfo.TransactionID + '.png';
+        // Portrait is at 0
+        // @TODO: Check if the image is portrait or not.
+        // const image = data.detail.data.response.images.fieldList[0].valueList[0].value;
         const img = generateImg(data.detail.data?.response?.images?.fieldList[0].valueList[0].value);
+        console.log('Document capture Image: ');
+        console.log(data.detail.data?.response?.images?.fieldList[0].valueList[0].value);
+        setDocumentFace(data.detail.data?.response?.images?.fieldList[0].valueList[0].value);
 
         const status = data.detail.data?.status;
         const isFinishStatus = status === 1 || status === 2;
@@ -323,6 +381,19 @@ function App() {
         <div className="face-liveness-response">
           <h3>Face Liveness Response</h3>
           {generateFaceLivenessResponseMarkup(faceLivenessResponse)}
+        </div>
+        <div className="face-capture-response">
+          <h3>Face Capture Response</h3>
+          {generateFacecaptureResponseMarkup(faceCaptureResponse)}
+        </div>
+        <div className="face-match-response">
+          <h3>Face Match Response (Needs a local docker running for API match)</h3>
+          {faceMatchPoints !== undefined && faceMatchPoints !== null && (
+            <div className="row">
+              <h4><FontAwesomeIcon icon={faDiamond} />Similarity Score</h4>
+              <p>{faceMatchPoints.toFixed(2)}%</p>
+            </div>
+          )}
         </div>
       </div>
     </>
