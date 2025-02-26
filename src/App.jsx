@@ -338,6 +338,16 @@ function App() {
         <h4>By Swarad Mokal</h4>
       </div>
       <div className="locale-options">
+        <h2>About</h2>
+        <ul>
+          <li>The demo allows you to upload a document, like Passport. The SDK shall read the document and pull out all text and image fields.</li>
+          <li>We then need a current live image of the user, which can be captured using Face Liveness OR Face Capture, Face Liveness provides extra checks to ensure the subject is alive and human.</li>
+          <li>The SDK then compares the document image and the live image to provide a similarity score.</li>
+          <li>Note that the last step, to compare faces, is done via local API call which would need a local docker image provided by Regula</li>
+          <li>A 1 month demo license is used for this demo.</li>
+        </ul>
+      </div>
+      <div className="locale-options">
         <h2>Locale Options</h2>
           <label htmlFor="locale">Locale</label>
           <select id="locale" onChange={(e) => setLocale(e.target.value)}>
