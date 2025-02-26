@@ -345,6 +345,7 @@ function App() {
           <li>The SDK then compares the document image and the live image to provide a similarity score.</li>
           <li>Note that the last step, to compare faces, is done via local API call which would need a local docker image provided by Regula</li>
           <li>A 1 month demo license is used for this demo.</li>
+          <li>Output from all APIs can be viewed in Response logs</li>
         </ul>
       </div>
       <div className="locale-options">
